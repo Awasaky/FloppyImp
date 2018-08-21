@@ -39,3 +39,10 @@ luac.out
 *.x86_64
 *.hex
 
+# Game Resourses
+*.jpg
+*.png
+*.jpg
+*.mp3
+*.otf
+*.ttf
