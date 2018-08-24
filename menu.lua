@@ -15,6 +15,8 @@ local background, cpu, impHead
 local backgroundMusic = audio.loadStream"music/game.mp3"
 local startButton, scoresButton, startBlock, scoresScreen
 
+local options = require"libs.options"
+
 local function impHeadAppear()
 	impHead.isVisible = true
 	timer.performWithDelay(impHead.time, function()
@@ -30,6 +32,7 @@ local function gotoGame(event)
 	if event.phase == "ended" then
 		composer.gotoScene"game"
 	end
+	return true
 end
 
 local function gotoScores(event)
@@ -37,6 +40,7 @@ local function gotoScores(event)
 		composer.setVariable( "lastScore", 0 )
 		composer.gotoScene"scores"
 	end
+	return true
 end
 
 -- -----------------------------------------------------------------------------------
@@ -65,15 +69,15 @@ function scene:create( event )
 
 	fireAnimation:prepare(gameGroup)
 
-	impHead = display.newImageRect(gameGroup, "images/impHead.png", 95, 77 )
-	impHead.x, impHead.y = screen.midX - 200, screen.midY+20
+	impHead = display.newImageRect( gameGroup, "images/impHead.png", 95, 77 )
+	impHead.x, impHead.y = screen.midX - 185, screen.midY+20
 	impHead.anchorX = 0.3
 	impHead.isVisible = false
 	impHead.time = 1500
 
 	startButton = display.newImageRect( uiGroup, "images/buttonStart.png", 150*1.5, 58*1.5 )
-	startButton.x = screen.midX + 200
-	startButton.y = screen.midY - 150
+	startButton.x = screen.midX - 200
+	startButton.y = screen.maxY - 200
 
 	startBlock = display.newRect(uiGroup, screen.midX-250, screen.midY+55, 220, 270)
 	startBlock.isVisible = false
@@ -81,7 +85,7 @@ function scene:create( event )
 
 	scoresButton = display.newImageRect( uiGroup, "images/buttonScores.png", 150*1.5, 58*1.5 )
 	scoresButton.x = screen.midX + 200
-	scoresButton.y = screen.midY - 20
+	scoresButton.y = screen.maxY - 200
 
 	scoresScreen = display.newCircle( uiGroup, screen.midX-50, screen.midY-50, 90 )
 	scoresScreen.yScale = 1.6
@@ -89,7 +93,8 @@ function scene:create( event )
 	scoresScreen.isVisible = false
 	scoresScreen.isHitTestable = true
 
-end;
+	options:prepare(uiGroup, screen.maxX-60, screen.minY+60 )
+end
 
 
 -- show()
@@ -99,7 +104,13 @@ function scene:show( event )
 
 	if ( phase == "will" ) then
 		-- Code here runs when the scene is still off screen (but is about to come on screen)
-		--audio.play( backgroundMusic, { channel=1, loops=-1 } )
+		options:start(
+			function()
+				audio.play( backgroundMusic, { channel=1, loops=-1 } )
+			end,
+			function()
+				audio.stop(1)
+			end )
 
 		startButton:addEventListener( "touch", gotoGame )
 		startBlock:addEventListener( "touch", gotoGame )
@@ -125,13 +136,14 @@ function scene:hide( event )
 
 	if ( phase == "will" ) then
 		-- Code here runs when the scene is on screen (but is about to go off screen)
-		audio.stop( 1 )
+		--audio.stop( 1 )
+		options:stop()
 		
-		startButton:removeEventListener( "tap", gotoGame )
-		startBlock:removeEventListener( "tap", gotoGame )
+		startButton:removeEventListener( "touch", gotoGame )
+		startBlock:removeEventListener( "touch", gotoGame )
 
-		scoresButton:removeEventListener( "tap", gotoScores )
-		scoresScreen:removeEventListener( "tap", gotoScores )
+		scoresButton:removeEventListener( "touch", gotoScores )
+		scoresScreen:removeEventListener( "touch", gotoScores )
 
 		fireAnimation:stop()
 	elseif ( phase == "did" ) then

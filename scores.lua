@@ -16,6 +16,7 @@ local filePath = system.pathForFile( "scores.json", system.DocumentsDirectory )
 local screen = require"libs.screenBounds"
 local colorName = require"libs.colorsPalette"
 local fireAnimation = require"libs.fireAnim"
+local options = require"libs.options"
 
 local lastScore
 
@@ -23,12 +24,14 @@ local function gotoGame(event)
 	if event.phase == "ended" then
 		composer.gotoScene( "game" ) -- change back to menu!
 	end
+	return true
 end
 
 local function gotoMenu(event)
 	if event.phase == "ended" then
 		composer.gotoScene( "menu" ) -- change back to menu!
 	end
+	return true
 end
 
 local resetScores
@@ -145,12 +148,15 @@ function scene:create( event )
     menuButton:addEventListener( "touch", gotoMenu )
 
 		local resetButton = display.newImageRect( sceneGroup, "images/buttonReset.png", 150*1.5, 58*1.5 )
-    resetButton.x, resetButton.y = screen.midX-100, screen.maxY - 100
+    resetButton.x, resetButton.y = screen.midX, screen.midY + 380
     resetButton:addEventListener( "touch", function(event)
     	if event.phase == "ended" then
     		resetScores(true)
     	end
+    	return true
     end)
+
+    options:prepare(sceneGroup, screen.maxX-60, screen.minY+60 )
 end
 
 
@@ -164,6 +170,14 @@ function scene:show( event )
 		-- Code here runs when the scene is still off screen (but is about to come on screen)
 		--audio.play( backgroundMusic, { channel=1, loops=-1 } )
 		fireAnimation:start()
+
+		options:start(
+			function()
+				audio.play( backgroundMusic, { channel=1, loops=-1 } )
+			end,
+			function()
+				audio.stop(1)
+			end )
 
 	elseif ( phase == "did" ) then
 		-- Code here runs when the scene is entirely on screen
@@ -180,7 +194,8 @@ function scene:hide( event )
 
 	if ( phase == "will" ) then
 		-- Code here runs when the scene is on screen (but is about to go off screen)
-		audio.stop( 1 )
+		--audio.stop( 1 )
+		options:stop()
 		fireAnimation:stop()
 	elseif ( phase == "did" ) then
 		-- Code here runs immediately after the scene goes entirely off screen

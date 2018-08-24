@@ -12,6 +12,7 @@ physics.start()
 
 local screen = require"libs.screenBounds"
 local colorName = require"libs.colorsPalette"
+local options = require"libs.options"
 
 local backGroup, gameGroup, uiGroup
 local background, background2, player, cpu
@@ -81,6 +82,7 @@ local function kickPlayer(event)
 		scoreCount = scoreCount + 1
 		scoreText.text = scoreCount
 	end
+	return true
 end
 
 function gameover(event)
@@ -158,12 +160,16 @@ function scene:create( event )
 
 	readyText = display.newText( uiGroup,
 		"Ready", screen.midX, screen.midY-100, fontName, 120 )
-	readyText.fill = fontColor
+	--readyText.fill = fontColor
+	readyText:setFillColor( 0 )
 	goText = display.newText( uiGroup,
 		"GO", screen.midX, screen.midY-100, fontName, 120 )
-	goText.fill = fontColor
+	--goText.fill = fontColor
+	goText:setFillColor( 0 )
 	goText.alpha = 0
-end;
+
+	options:prepare(uiGroup, screen.maxX-60, screen.minY+60 )
+end
 
 
 -- show()
@@ -177,6 +183,14 @@ function scene:show( event )
 		scoreCount = 0
 		scoreText.text = scoreCount
 		fireAnimation:start()
+
+		options:start(
+			function()
+				audio.play( backgroundMusic, { channel=1, loops=-1 } )
+			end,
+			function()
+				audio.stop(1)
+			end )
 
 	elseif ( phase == "did" ) then
 		-- Code here runs when the scene is entirely on screen
@@ -197,7 +211,6 @@ function scene:show( event )
 		end)
 		transition.to(backGroup, { time=gameplay.backSpeed, x=-background.width, iterations=0 })
 		--audio.play( backgroundMusic, { channel=1, loops=-1 } )
-		audio.setVolume( 0.5, { channel=1 } )
 	end;
 end;
 
@@ -215,7 +228,8 @@ function scene:hide( event )
 		Runtime:removeEventListener( "touch", kickPlayer )
 		player:removeEventListener( "collision", gameover )
 		physics.pause()
-		audio.stop(1)
+		--audio.stop(1)
+		options:stop()
 	elseif ( phase == "did" ) then
 		-- Code here runs immediately after the scene goes entirely off screen
 		composer.removeScene( "game" )
