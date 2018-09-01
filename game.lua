@@ -106,7 +106,7 @@ function scene:create( event )
 	sceneGroup:insert(uiGroup)
 
 	local backName = "images/background.png"
-	local backScale = 1.77
+	local backScale = screen.sizeY/720
 	background = display.newImageRect( backGroup, backName, 1280*backScale, 720*backScale )
 	background.x, background.y = screen.midX, screen.midY
 	background2 = display.newImageRect( backGroup, backName, background.width, background.height )
@@ -147,13 +147,13 @@ function scene:create( event )
 	player.isSensor = true
 
 	local scoreSprite = display.newImageRect( uiGroup, "images/score.png", 166*1.5, 89*1.5 )
-	scoreSprite.x, scoreSprite.y = screen.midX - 100, screen.minY + 75
+	scoreSprite.x, scoreSprite.y = screen.midX - 100, screen.minY + 125
 
 	local fontName = "images/think.otf"
 	local fontColor = { colorName("return webColor", "#d75f12" ) }
 
 	scoreText = display.newText( uiGroup,
-		"", screen.midX + 40, screen.minY + 100, fontName, 100 )
+		"", screen.midX + 40, screen.minY + 150, fontName, 100 )
 	scoreText.anchorX = 0
 	scoreText:setFillColor( 0 )
 	scoreText.alpha = 0.8
@@ -168,7 +168,7 @@ function scene:create( event )
 	goText:setFillColor( 0 )
 	goText.alpha = 0
 
-	options:prepare(uiGroup, screen.maxX-60, screen.minY+60 )
+	options:prepare(uiGroup, screen.maxX-60, screen.minY+120 )
 end
 
 

@@ -57,7 +57,7 @@ function scene:create( event )
 	sceneGroup:insert(gameGroup)
 	sceneGroup:insert(uiGroup)
 
-	local backScale = 1.77
+	local backScale = screen.sizeY/720
 	background = display.newImageRect( backGroup, "images/background.png", 1280*backScale, 720*backScale )
 	background.x, background.y = screen.midX, screen.midY
 
@@ -93,7 +93,7 @@ function scene:create( event )
 	scoresScreen.isVisible = false
 	scoresScreen.isHitTestable = true
 
-	options:prepare(uiGroup, screen.maxX-60, screen.minY+60 )
+	options:prepare(uiGroup, screen.maxX-60, screen.minY+120 )
 end
 
 

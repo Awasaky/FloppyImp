@@ -18,18 +18,18 @@ local colorName = require"libs.colorsPalette"
 local fireAnimation = require"libs.fireAnim"
 local options = require"libs.options"
 
-local lastScore
+local lastScore, creditsImage, creditsTimer
 
 local function gotoGame(event)
 	if event.phase == "ended" then
-		composer.gotoScene( "game" ) -- change back to menu!
+		composer.gotoScene"game" -- change back to menu!
 	end
 	return true
 end
 
 local function gotoMenu(event)
 	if event.phase == "ended" then
-		composer.gotoScene( "menu" ) -- change back to menu!
+		composer.gotoScene"menu" -- change back to menu!
 	end
 	return true
 end
@@ -67,7 +67,7 @@ function resetScores( returnMenu )
 	scoresTable = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 	if returnMenu then
 		saveScores()
-		gotoMenu()
+		gotoMenu({phase = "ended"})
 	end		
 end
 
@@ -97,25 +97,36 @@ function scene:create( event )
     -- Save the scores
     saveScores()
 
-    local backScale = 1.77
+    local backScale = screen.sizeY/720
 		local background = display.newImageRect( sceneGroup, "images/background.png", 1280*backScale, 720*backScale )
 		background.x, background.y = screen.midX, screen.midY
 
 		fireAnimation:prepare(sceneGroup)
 
+		creditsImage = display.newImageRect( sceneGroup, "images/credits.png", 232*2, 377*2 )
+		creditsImage.x = screen.midX
+		creditsImage.y = screen.maxY + creditsImage.height*0.5
+
+		
+		local tableOffsetY = -50
 		local	scoresBackScale = 1.5
 		local scoresBack = display.newImageRect( sceneGroup, "images/highscores.png", 441*scoresBackScale, 538*scoresBackScale )
-		scoresBack.x, scoresBack.y = screen.midX, screen.midY
+		scoresBack.x, scoresBack.y = screen.midX, screen.midY + tableOffsetY
 
     local fontName = "images/think.otf"
 		local fontColor = { colorName"yellow" }
-		local lastScoreText = display.newText( sceneGroup, "LAST SCORE " .. lastScore, screen.midX + 25, screen.midY - 195, fontName, 45 )
+		local lastScoreText = display.newText( sceneGroup,
+			"LAST SCORE " .. lastScore,
+			screen.midX + 25, screen.midY - 195 + tableOffsetY,
+			fontName, 45 )
 		lastScoreText.alpha = 0.7
 
-		local names = { "1ST", "2ND", "3RD", "4TH", "5TH", "6TH", "7TH", "8TH", "9TH", "10TH" }
+		local names = {
+			"1ST", "2ND", "3RD", "4TH", "5TH", "6TH", "7TH", "8TH", "9TH", "10TH"
+		}
     for i = 1, 10 do
       if scoresTable[i] > 0 then
-        local yPos = screen.midY - 195 + ( i * 46 )
+        local yPos = screen.midY - 195 + ( i * 46 ) + tableOffsetY
 
         local rankNum = display.newText( sceneGroup, names[i], screen.midX+15, yPos, fontName, 45 )
         rankNum.anchorX = 1
@@ -128,14 +139,14 @@ function scene:create( event )
     end
 
     local blinkTime = 5000
-    local restartCircle = display.newCircle( sceneGroup, screen.midX-200, screen.midY, 80 )
+    local restartCircle = display.newCircle( sceneGroup, screen.midX-200, screen.midY + tableOffsetY, 80 )
     restartCircle:setFillColor( colorName"tan" )
     transition.blink( restartCircle, { time = blinkTime } )
     local restartButton = display.newImageRect( sceneGroup, "images/buttonRestart.png", 104*1.5, 102*1.5 )
-    restartButton.x, restartButton.y = screen.midX-200, screen.midY
+    restartButton.x, restartButton.y = screen.midX-200, screen.midY + tableOffsetY
     restartButton:addEventListener( "touch", gotoGame )
     
-		local menuCircle = display.newCircle( sceneGroup, screen.midX+200, screen.midY+150, 80 )
+		local menuCircle = display.newCircle( sceneGroup, screen.midX+200, screen.midY + 150 + tableOffsetY, 80 )
     menuCircle:setFillColor( colorName"tan" )
     menuCircle.alpha = 0
     timer.performWithDelay( 500, function()
@@ -144,11 +155,11 @@ function scene:create( event )
     end)
     
     local menuButton = display.newImageRect( sceneGroup, "images/buttonMain.png", 104*1.5, 102*1.5 )
-    menuButton.x, menuButton.y = screen.midX+200, screen.midY+150
+    menuButton.x, menuButton.y = screen.midX+200, screen.midY + 150 + tableOffsetY
     menuButton:addEventListener( "touch", gotoMenu )
 
 		local resetButton = display.newImageRect( sceneGroup, "images/buttonReset.png", 150*1.5, 58*1.5 )
-    resetButton.x, resetButton.y = screen.midX, screen.midY + 380
+    resetButton.x, resetButton.y = screen.midX, screen.midY + 380 + tableOffsetY
     resetButton:addEventListener( "touch", function(event)
     	if event.phase == "ended" then
     		resetScores(true)
@@ -156,7 +167,7 @@ function scene:create( event )
     	return true
     end)
 
-    options:prepare(sceneGroup, screen.maxX-60, screen.minY+60 )
+    options:prepare(sceneGroup, screen.maxX-60, screen.minY+120 )
 end
 
 
@@ -170,6 +181,19 @@ function scene:show( event )
 		-- Code here runs when the scene is still off screen (but is about to come on screen)
 		--audio.play( backgroundMusic, { channel=1, loops=-1 } )
 		fireAnimation:start()
+
+		local creditsDelayTime = 5000
+		local creditsFlyTime = 10000
+		creditsTimer = timer.performWithDelay( creditsDelayTime + creditsFlyTime,
+			function()
+				transition.to(creditsImage, {
+					time = creditsFlyTime,
+					y = screen.minY - creditsImage.height*0.5,
+					onComplete = function()
+						creditsImage.y = screen.maxY + creditsImage.height*0.5
+					end
+				})
+			end, 0)
 
 		options:start(
 			function()
@@ -197,6 +221,7 @@ function scene:hide( event )
 		--audio.stop( 1 )
 		options:stop()
 		fireAnimation:stop()
+		timer.cancel( creditsTimer )
 	elseif ( phase == "did" ) then
 		-- Code here runs immediately after the scene goes entirely off screen
 		composer.removeScene( "scores" )

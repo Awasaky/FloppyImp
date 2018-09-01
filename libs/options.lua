@@ -27,7 +27,7 @@ local filePath = system.pathForFile( "options.json", system.DocumentsDirectory )
 local optionsTable -- table to read data from file
 local musicEnable, musicDisable -- buttons
 local saveData, loadData -- internal functions
-local disabler --exchange callBackDisable to stop function
+--local disabler --exchange callBackDisable to stop function
 
 function M:prepare( screenGroup, posX, posY )
 	musicEnable = display.newImageRect( screenGroup, "images/soundDisabled.png", 104, 102 )
@@ -71,11 +71,11 @@ function M:start( callBackEnable, callBackDisable )
 		callBackDisable()
 		musicEnable.isVisible = true
 	end
-	disabler = callBackDisable
+	--disabler = callBackDisable
 end
 
 function M:stop()
-	disabler()
+	--disabler()
 	musicEnable:removeEventListener( "touch" )
 	musicDisable:removeEventListener( "touch" )
 end

@@ -1,3 +1,11 @@
+--[[
+screen.
+.minX .minY - minimal coordinates on devices screen
+.maxX .maxY - maximal coordinates on devices screen
+.midX .midY - short names to display.contentCenterX, display.contentCenterY
+.sizeX .sizeX - return actual size of screen in coordinates
+--]]
+
 local base = {}
 
 do
@@ -16,7 +24,7 @@ base.sizeX = base.maxX - base.minX
 base.sizeY = base.maxY - base.minY
 
 -- next code does screen table like constants - readable, but not changeable
-mt, screen = {}, {}
+local mt, screen = {}, {}
 mt.__index = base
 mt.__newindex = function() end
 setmetatable(screen, mt)
