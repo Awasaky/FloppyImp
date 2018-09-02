@@ -190,7 +190,7 @@ function scene:show( event )
 					time = creditsFlyTime,
 					y = screen.minY - creditsImage.height*0.5,
 					onComplete = function()
-						creditsImage.y = screen.maxY + creditsImage.height*0.5
+						creditsImage.y = screen.maxY + creditsImage.height * 0.5
 					end
 				})
 			end, 0)

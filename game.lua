@@ -78,7 +78,9 @@ end
 
 local function kickPlayer(event)
 	if event.phase == "ended" then
-		player:setLinearVelocity( 0, -gameplay.kick )
+		local velX, velY = player:getLinearVelocity()
+		local newVelocityY = velY < 0 and -gameplay.kick or velY-gameplay.kick
+		player:setLinearVelocity( 0, newVelocityY )
 		scoreCount = scoreCount + 1
 		scoreText.text = scoreCount
 	end
