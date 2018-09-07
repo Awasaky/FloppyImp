@@ -18,6 +18,7 @@ local backGroup, gameGroup, uiGroup
 local background, background2, player, cpu
 local fireAnimation = require"libs.fireAnim"
 local obstacles, lastStartedObstacleUp, lastStartedObstacleDown = {}
+local pillarsMedium = 0
 local scoreCount = 0
 local scoreText, readyText, goText
 local backgroundMusic = audio.loadStream"music/game.mp3"
@@ -28,8 +29,10 @@ local gameplay = {
 	obstaclesNext = 350, -- distance between pillars in pixels
 	holeMin = 200, -- minimal hole betweeen pllars
 	holeDiff = 21, -- maximal hole betweeen pllars = min + diff
-	holeOffset = 200, -- offset from center both directions
-	kick = 400, -- up orientation
+	holeOffseMax = 250, -- offset from center both directions
+	holeOffseMin = 50,
+	maxVel = 400,
+	kick = 550, -- up orientation
 	gravity = 15, -- gravity oriented down
 	startPause = 2000, -- pause before start play,
 	backSpeed = 30000
@@ -52,7 +55,8 @@ local function placeObstacles() -- place obstacles at right side of screen
 		return obstacles[nextObstacle]
 	end
 
-	local holeOffset = math.random(-gameplay.holeOffset, gameplay.holeOffset)
+	local holeOffset = math.random(gameplay.holeOffseMin, gameplay.holeOffseMax)
+	holeOffset = pillarsMedium > 0 and holeOffset or -holeOffset
 	local holeSize = gameplay.holeMin + math.random(0, gameplay.holeDiff)
 	lastStartedObstacleUp = getObstacle()
 	lastStartedObstacleUp.x = screen.maxX + lastStartedObstacleUp.width*0.5
@@ -62,6 +66,7 @@ local function placeObstacles() -- place obstacles at right side of screen
 	lastStartedObstacleDown.x = screen.maxX + lastStartedObstacleDown.width*0.5
 	lastStartedObstacleDown.y = screen.midY + holeSize + holeOffset
 	lastStartedObstacleDown.rotation = 0
+	pillarsMedium = screen.midY - (lastStartedObstacleUp.y + lastStartedObstacleDown.y) * 0.5
 end
 
 local function updateObstacles(event)
@@ -76,10 +81,17 @@ local function updateObstacles(event)
 	end
 end
 
+local velText
+
+
 local function kickPlayer(event)
 	if event.phase == "ended" then
 		local velX, velY = player:getLinearVelocity()
-		local newVelocityY = velY < 0 and -gameplay.kick or velY-gameplay.kick
+		local newVelocityY = velY - gameplay.kick
+		if newVelocityY < -gameplay.maxVel then
+			newVelocityY = -gameplay.maxVel
+		end
+		--local newVelocityY = velY < 0 and -gameplay.kick or velY-gameplay.kick
 		player:setLinearVelocity( 0, newVelocityY )
 		scoreCount = scoreCount + 1
 		scoreText.text = scoreCount
@@ -171,6 +183,8 @@ function scene:create( event )
 	goText.alpha = 0
 
 	options:prepare(uiGroup, screen.maxX-60, screen.minY+120 )
+
+	velText = display.newText(uiGroup, "", screen.midX, screen.minY + 50, native.systemFont, 64 )
 end
 
 
