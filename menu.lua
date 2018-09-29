@@ -1,21 +1,20 @@
-local composer = require"composer"
-local scene = composer.newScene();
+local composer = require "composer"
+local scene = composer.newScene()
 
 -- -----------------------------------------------------------------------------------
 -- Code outside of the scene event functions below will only be executed ONCE unless
 -- the scene is removed entirely (not recycled) via "composer.removeScene()"
 -- -----------------------------------------------------------------------------------
 
-local screen = require"libs.screenBounds"
-local fireAnimation = require"libs.fireAnim"
+local screen = require "libs.screenBounds"
+local fireAnimation = require "libs.fireAnim"
+local options = require "libs.options"
 
 local backGroup, gameGroup, uiGroup
 local background, cpu, impHead
 
-local backgroundMusic = audio.loadStream"music/game.mp3"
+local backgroundMusic = audio.loadStream "music/game.mp3"
 local startButton, scoresButton, startBlock, scoresScreen
-
-local options = require"libs.options"
 
 local function impHeadAppear()
 	impHead.isVisible = true
@@ -50,7 +49,6 @@ end
 -- create()
 function scene:create( event )
 	local sceneGroup = self.view
-	-- Code here runs when the scene is first created but has not yet appeared on screen
 
 	backGroup, gameGroup, uiGroup = display.newGroup(), display.newGroup(), display.newGroup()
 	sceneGroup:insert(backGroup)
@@ -77,7 +75,7 @@ function scene:create( event )
 
 	startButton = display.newImageRect( uiGroup, "images/buttonStart.png", 150*1.5, 58*1.5 )
 	startButton.x = screen.midX - 200
-	startButton.y = screen.maxY - 200
+	startButton.y = screen.maxY - 250
 
 	startBlock = display.newRect(uiGroup, screen.midX-250, screen.midY+55, 220, 270)
 	startBlock.isVisible = false
@@ -85,7 +83,7 @@ function scene:create( event )
 
 	scoresButton = display.newImageRect( uiGroup, "images/buttonScores.png", 150*1.5, 58*1.5 )
 	scoresButton.x = screen.midX + 200
-	scoresButton.y = screen.maxY - 200
+	scoresButton.y = screen.maxY - 250
 
 	scoresScreen = display.newCircle( uiGroup, screen.midX-50, screen.midY-50, 90 )
 	scoresScreen.yScale = 1.6

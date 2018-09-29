@@ -81,9 +81,6 @@ local function updateObstacles(event)
 	end
 end
 
-local velText
-
-
 local function kickPlayer(event)
 	if event.phase == "ended" then
 		local velX, velY = player:getLinearVelocity()
@@ -102,7 +99,14 @@ end
 function gameover(event)
 	player:removeEventListener( "collision", gameover )
 	composer.setVariable( "lastScore", scoreCount )
-	composer.gotoScene("scores")
+	--check previos restart
+	local rewardRestart = composer.getVariable "rewardRestart"
+	if rewardRestart then
+		composer.gotoScene "scores"
+	else
+		composer.gotoScene "restart"
+	end
+	composer.setVariable( "rewardRestart", false )
 end
 
 -- -----------------------------------------------------------------------------------
@@ -112,7 +116,7 @@ end
 -- create()
 function scene:create( event )
 	local sceneGroup = self.view;
-	-- Code here runs when the scene is first created but has not yet appeared on screen
+
 	physics.pause()
 	backGroup, gameGroup, uiGroup = display.newGroup(), display.newGroup(), display.newGroup()
 	sceneGroup:insert(backGroup)
@@ -160,7 +164,7 @@ function scene:create( event )
 	)
 	player.isSensor = true
 
-	local scoreSprite = display.newImageRect( uiGroup, "images/score.png", 166*1.5, 89*1.5 )
+	local scoreSprite = display.newImageRect(uiGroup, "images/score.png", 166*1.5, 89*1.5)
 	scoreSprite.x, scoreSprite.y = screen.midX - 100, screen.minY + 125
 
 	local fontName = "images/think.otf"
@@ -174,17 +178,13 @@ function scene:create( event )
 
 	readyText = display.newText( uiGroup,
 		"Ready", screen.midX, screen.midY-100, fontName, 120 )
-	--readyText.fill = fontColor
 	readyText:setFillColor( 0 )
 	goText = display.newText( uiGroup,
 		"GO", screen.midX, screen.midY-100, fontName, 120 )
-	--goText.fill = fontColor
 	goText:setFillColor( 0 )
 	goText.alpha = 0
 
 	options:prepare(uiGroup, screen.maxX-60, screen.minY+120 )
-
-	velText = display.newText(uiGroup, "", screen.midX, screen.minY + 50, native.systemFont, 64 )
 end
 
 
@@ -196,10 +196,7 @@ function scene:show( event )
 	if ( phase == "will" ) then
 		-- Code here runs when the scene is still off screen (but is about to come on screen)
 		player:addEventListener( "collision", gameover )
-		scoreCount = 0
-		scoreText.text = scoreCount
 		fireAnimation:start()
-
 		options:start(
 			function()
 				audio.play( backgroundMusic, { channel=1, loops=-1 } )
@@ -207,6 +204,14 @@ function scene:show( event )
 			function()
 				audio.stop(1)
 			end )
+
+		local rewardRestart = composer.getVariable "rewardRestart"
+		if rewardRestart then
+			scoreCount = composer.getVariable "lastScore"
+		else
+			scoreCount = 0
+		end
+		scoreText.text = scoreCount
 
 	elseif ( phase == "did" ) then
 		-- Code here runs when the scene is entirely on screen

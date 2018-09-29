@@ -19,6 +19,8 @@ local fireAnimation = require"libs.fireAnim"
 local options = require"libs.options"
 
 local lastScore, creditsImage, creditsTimer
+local restartCircle, menuCircle, menuCircleTimer
+local restartButton, menuButton, resetButton
 
 local function gotoGame(event)
 	if event.phase == "ended" then
@@ -69,6 +71,13 @@ function resetScores( returnMenu )
 		saveScores()
 		gotoMenu({phase = "ended"})
 	end		
+end
+
+local function resetButtonAction(event)
+ 	if event.phase == "ended" then
+ 		resetScores(true)
+ 	end
+ 	return true
 end
 
 -- -----------------------------------------------------------------------------------
@@ -138,34 +147,22 @@ function scene:create( event )
       end
     end
 
-    local blinkTime = 5000
-    local restartCircle = display.newCircle( sceneGroup, screen.midX-200, screen.midY + tableOffsetY, 80 )
+    restartCircle = display.newCircle( sceneGroup, screen.midX-200, screen.midY + tableOffsetY, 80 )
     restartCircle:setFillColor( colorName"tan" )
-    transition.blink( restartCircle, { time = blinkTime } )
-    local restartButton = display.newImageRect( sceneGroup, "images/buttonRestart.png", 104*1.5, 102*1.5 )
-    restartButton.x, restartButton.y = screen.midX-200, screen.midY + tableOffsetY
-    restartButton:addEventListener( "touch", gotoGame )
     
-		local menuCircle = display.newCircle( sceneGroup, screen.midX+200, screen.midY + 150 + tableOffsetY, 80 )
+		menuCircle = display.newCircle( sceneGroup, screen.midX+200, screen.midY + 150 + tableOffsetY, 80 )
     menuCircle:setFillColor( colorName"tan" )
     menuCircle.alpha = 0
-    timer.performWithDelay( 500, function()
-    	menuCircle.alpha = 1
-    	transition.blink( menuCircle, { time = blinkTime } )
-    end)
     
-    local menuButton = display.newImageRect( sceneGroup, "images/buttonMain.png", 104*1.5, 102*1.5 )
+		restartButton = display.newImageRect( sceneGroup, "images/buttonRestart.png", 104*1.5, 102*1.5 )
+    restartButton.x, restartButton.y = screen.midX-200, screen.midY + tableOffsetY
+
+    menuButton = display.newImageRect( sceneGroup, "images/buttonMain.png", 104*1.5, 102*1.5 )
     menuButton.x, menuButton.y = screen.midX+200, screen.midY + 150 + tableOffsetY
     menuButton:addEventListener( "touch", gotoMenu )
 
-		local resetButton = display.newImageRect( sceneGroup, "images/buttonReset.png", 150*1.5, 58*1.5 )
+		resetButton = display.newImageRect( sceneGroup, "images/buttonReset.png", 150*1.5, 58*1.5 )
     resetButton.x, resetButton.y = screen.midX, screen.midY + 380 + tableOffsetY
-    resetButton:addEventListener( "touch", function(event)
-    	if event.phase == "ended" then
-    		resetScores(true)
-    	end
-    	return true
-    end)
 
     options:prepare(sceneGroup, screen.maxX-60, screen.minY+120 )
 end
@@ -179,7 +176,6 @@ function scene:show( event )
 
 	if ( phase == "will" ) then
 		-- Code here runs when the scene is still off screen (but is about to come on screen)
-		--audio.play( backgroundMusic, { channel=1, loops=-1 } )
 		fireAnimation:start()
 
 		local creditsDelayTime = 5000
@@ -203,6 +199,16 @@ function scene:show( event )
 				audio.stop(1)
 			end )
 
+		local blinkTime = 5000
+		transition.blink( restartCircle, { time = blinkTime } )
+    menuCircleTimer = timer.performWithDelay( 500, function()
+    	menuCircle.alpha = 1
+    	transition.blink( menuCircle, { time = blinkTime } )
+    end)
+
+    restartButton:addEventListener( "touch", gotoGame )
+    resetButton:addEventListener( "touch", resetButtonAction)
+
 	elseif ( phase == "did" ) then
 		-- Code here runs when the scene is entirely on screen
 
@@ -222,9 +228,13 @@ function scene:hide( event )
 		options:stop()
 		fireAnimation:stop()
 		timer.cancel( creditsTimer )
+		transition.cancel( restartCircle )
+		timer.cancel( menuCircleTimer )
+		restartButton:removeEventListener( "touch", gotoGame )
+    resetButton:removeEventListener( "touch", resetButtonAction)
 	elseif ( phase == "did" ) then
 		-- Code here runs immediately after the scene goes entirely off screen
-		composer.removeScene( "scores" )
+		composer.removeScene"scores"
 	end
 end
 
